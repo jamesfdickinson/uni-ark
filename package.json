@@ -1,0 +1,15 @@
+{
+  "name": "uni-ark",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "serve": "npx --yes serve@14.2.6 .",
+    "clean": "npx --yes shx@0.4.0 rm -rf build && npx --yes shx@0.4.0 mkdir build",
+    "minify": "npx --yes terser@5.50.0 game.js --compress passes=4,unsafe_math=true,unsafe_methods=true --mangle toplevel --format ascii_only=true,comments=false --output build/game.js",
+    "copy": "npx --yes shx@0.4.0 cp index.html build/index.html",
+    "zip": "cd build && npx --yes bestzip@3.0.2 uni-ark.zip index.html game.js && npx --yes --package advzip-bin@2.0.0 advzip --recompress --shrink-extra uni-ark.zip",
+    "check-size": "node -e \"const s=require('fs').statSync('build/uni-ark.zip').size;console.log('uni-ark.zip: '+s+' / 13312 bytes');if(s>13312)process.exit(1)\"",
+    "build": "npm run clean && npm run minify && npm run copy && npm run zip && npm run check-size"
+  }
+}

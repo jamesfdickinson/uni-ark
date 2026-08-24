@@ -8,13 +8,8 @@ pen.scale(canvas.width / W, canvas.height / H);
 const colors = ["#ff4d8e", "#ff963e", "#ffe54e", "#54dd83", "#55c5ff", "#9d72ff"];
 const groundColors = ["#6a5", "#8b6", "#9c7", "#ba8", "#cb9", "#795"];
 const storageKey = "unicornBlast.uniArk.save";
-const legacySaveKey = "uniArkSave";
-const legacyStatKeys = [
-  "uniArkEndings", "uniArkAchievements", "uniArkApples", "uniArkCritters", "uniArkLongestRun"
-];
 const endingNames = ["GOLD", "FRIENDS", "LAST UNICORN", "DRAGON", "PARADE", "ONE PIECE"];
 const secondEndingNames = ["BURGER", "DOUBLE RAINBOW", "TITANIC", "42", "SOFTEST BED", "PRISM CAVE"];
-const legacySecondEndingNames = ["GOLD", "FRIENDS", "TREE", "DRAGON", "WISH", "PRISM CAVE"];
 const endings = [
   ["A POT OF GOLD!", "A stranded leprechaun shares gold and a safe hill."],
   ["NEW BEST FRIENDS!", "A lost herd welcomes the unicorn into its family."],
@@ -48,12 +43,12 @@ const treeDropTimes = new Map();
 let lastOpen = [];
 const pickups = [];
 const critters = [];
-const effects = Array(7).fill(0);
-const pickupColors = ["#5d8", "#5cf", "#fe5", "#97f", "#d47", "#f62", "#715", "#f4f"];
-const pickupTimes = [600, 600, 600, 300, 300, 300, 150];
+const effects = Array(6).fill(0);
+const pickupColors = ["#5d8", , "#fe5", "#97f", "#d47", "#f62", , "#f4f"];
+const pickupTimes = [600, , 600, 300, 300, 300];
 const speaker = window.speechSynthesis;
 const Speech = window.SpeechSynthesisUtterance;
-const pickupSpeech = "Speed|Air|vision|wall walk|slow curse|flood surge|freeze|rainbow laser".split("|");
+const pickupSpeech = "Speed||vision|wall walk|slow curse|flood surge||rainbow laser".split("|");
 let pickupPopup = "";
 let pickupPopupUntil = 0;
 let laserShots = 0;
@@ -68,7 +63,6 @@ let ending = 0;
 let endingQuest = 1;
 let finaleTime = 0;
 let doubleFinalePending = false;
-let testingEnding = false;
 let shake = 0;
 let flash = 0;
 let audio;
@@ -88,14 +82,6 @@ const achievementNames = [
   "SWIM WITH THE FISHIES", "CHASE 15 CRITTERS", "CHASE 40 CRITTERS", "CHASE 70 CRITTERS",
   "CURSES", "NO POWER-UPS", "GET ON THE ARK"
 ];
-const legacyAchievementNames = {
-  0: ["KNOCK 20 APPLES DOWN", "KNOCK 26 APPLES DOWN"],
-  1: ["KNOCK 60 APPLES DOWN", "KNOCK 78 APPLES DOWN"],
-  2: ["KNOCK 100 APPLES DOWN", "KNOCK 130 APPLES DOWN"],
-  8: ["CHASE 10 CRITTERS", "CHASE 13 CRITTERS"],
-  9: ["CHASE 30 CRITTERS", "CHASE 39 CRITTERS"],
-  10: ["CHASE 50 CRITTERS", "CHASE 65 CRITTERS"]
-};
 let achievementBits = 0;
 let applesKnocked = 0;
 let crittersChased = 0;
@@ -249,12 +235,8 @@ function saveProgress() {
 
 function loadProgress() {
   let save;
-  let importedLegacySave = false;
   try {
-    const currentSave = localStorage.getItem(storageKey);
-    const legacySave = currentSave === null ? localStorage.getItem(legacySaveKey) : null;
-    importedLegacySave = currentSave === null && legacySave !== null;
-    save = JSON.parse(currentSave ?? legacySave ?? "null");
+    save = JSON.parse(localStorage.getItem(storageKey) ?? "null");
   } catch (error) {
     save = null;
   }
@@ -262,38 +244,17 @@ function loadProgress() {
     const rainbow = Array.isArray(save.quests.rainbow) ? save.quests.rainbow : [];
     const doubleRainbow = Array.isArray(save.quests.doubleRainbow) ? save.quests.doubleRainbow : [];
     endingNames.forEach((name, index) => {
-      // TREE was the original name of the third first-quest ending.
-      if (rainbow.includes(name) || index === 2 && rainbow.includes("TREE") ||
-        index === 4 && rainbow.includes("WISH") ||
-        index === 5 && rainbow.includes("PRISM CAVE")) foundEndings |= 1 << index;
-      if (doubleRainbow.includes(secondEndingNames[index]) ||
-        doubleRainbow.includes(legacySecondEndingNames[index]) ||
-        index === 5 && doubleRainbow.includes("ONE PIECE")) foundEndings |= 1 << index + 6;
+      if (rainbow.includes(name)) foundEndings |= 1 << index;
+      if (doubleRainbow.includes(secondEndingNames[index])) foundEndings |= 1 << index + 6;
     });
     const unlocked = Array.isArray(save.achievements) ? save.achievements : [];
     achievementNames.forEach((name, index) => {
-      if (unlocked.includes(name) || (legacyAchievementNames[index] || [])
-        .some(oldName => unlocked.includes(oldName)))
-        achievementBits |= 1 << index;
+      if (unlocked.includes(name)) achievementBits |= 1 << index;
     });
     applesKnocked = Number(save.stats.applesKnockedDown) || 0;
     crittersChased = Number(save.stats.crittersChased) || 0;
     longestRun = Number(save.stats.longestRunSeconds) || 0;
-    if (importedLegacySave) {
-      saveProgress();
-      localStorage.removeItem(legacySaveKey);
-    }
-    return;
   }
-
-  // Import the old numeric keys once, then replace them with the readable save.
-  foundEndings = Number(localStorage.getItem(legacyStatKeys[0])) || 0;
-  achievementBits = Number(localStorage.getItem(legacyStatKeys[1])) || 0;
-  applesKnocked = Number(localStorage.getItem(legacyStatKeys[2])) || 0;
-  crittersChased = Number(localStorage.getItem(legacyStatKeys[3])) || 0;
-  longestRun = Number(localStorage.getItem(legacyStatKeys[4])) || 0;
-  saveProgress();
-  legacyStatKeys.forEach(key => localStorage.removeItem(key));
 }
 
 function unlockAchievement(index) {
@@ -417,12 +378,12 @@ function makeMaze() {
   effects.fill(0);
   laserShots = beam = 0;
   glowType = -1;
-  for (let index = 0; index < 9;) {
+  for (let index = 0; index < 7;) {
     const x = 1 + Math.floor(Math.random() * 25) * 2;
     const y = 1 + Math.floor(Math.random() * 20) * 2;
     if (maze[y][x] === "." && Math.abs(x - 25) + Math.abs(y - 39) > 5) {
       const point = cellCenter(x, y);
-      const type = index === 8 ? 2 : index;
+      const type = [0, 2, 3, 4, 5, 7, 2][index];
       pickups.push([point.x, point.y, type]);
       index++;
     }
@@ -603,32 +564,6 @@ function drawSky() {
   }
 }
 
-function treeLightAt(x, y) {
-  const variation = .82 + ((x / cell * 17 + y / cell * 29) % 9) / 45;
-  return {
-    x: cameraX + 710,
-    y: cameraY + 55,
-    color: "#fff1a8",
-    strength: .22 * variation
-  };
-}
-
-function drawTreeReflection(x, y) {
-  const light = treeLightAt(x, y);
-  const dx = light.x - (x + 15);
-  const dy = light.y - (y + 7);
-  const distance = Math.max(1, Math.hypot(dx, dy));
-  const sideX = dx / distance;
-  const sideY = dy / distance;
-  pen.save();
-  pen.globalCompositeOperation = "screen";
-  pen.globalAlpha = Math.min(.72, light.strength);
-  circle(x + 15 + sideX * 8, y + 6 + sideY * 6, 7, light.color);
-  pen.globalAlpha *= .7;
-  rect(x + 12 + sideX * 6, y + 15, 4, 11, light.color);
-  pen.restore();
-}
-
 function treeTypeAt(x, y) {
   const column = x / cell | 0;
   const row = y / cell | 0;
@@ -767,7 +702,6 @@ function drawTree(x, y) {
     line(x + 15, y, x + 5, y + 19, secondQuest ? "#f3b4d4" : "#d9f4ff", 3);
     line(x + 15, y, x + 25, y + 19, secondQuest ? "#ffd2e8" : "#eefbff", 2);
     pen.restore();
-    drawTreeReflection(x + sway, y);
     return;
   }
   roundRect(x + 11, y + 5, 8, 25, 3, secondQuest ?
@@ -788,7 +722,6 @@ function drawTree(x, y) {
     circle(x + 23, y + 2, 2.5, "#ef4f58");
   } else circle(x + 10, y + 2, 4, secondQuest ? "#ffd0e8" : "#c6ff8d");
   pen.restore();
-  drawTreeReflection(x + sway, y);
 }
 
 function drawMaze(trees = false) {
@@ -932,8 +865,6 @@ function drawPickups() {
     if (type === 0) {
       pen.moveTo(x - 7, y - 5); pen.lineTo(x - 1, y); pen.lineTo(x - 7, y + 5);
       pen.moveTo(x, y - 5); pen.lineTo(x + 7, y); pen.lineTo(x, y + 5);
-    } else if (type === 1) {
-      pen.arc(x - 4, y, 5, -1.3, 1.3); pen.arc(x + 4, y, 5, 1.8, 4.5);
     } else if (type === 2) {
       pen.ellipse(x, y, 7, 4, 0, 0, Math.PI * 2);
       pen.moveTo(x + 2, y); pen.arc(x, y, 2, 0, Math.PI * 2);
@@ -945,9 +876,6 @@ function drawPickups() {
     } else if (type === 5) {
       pen.moveTo(x, y - 8); pen.quadraticCurveTo(x + 11, y + 5, x, y + 8);
       pen.quadraticCurveTo(x - 11, y + 5, x, y - 8);
-    } else if (type === 6) {
-      pen.moveTo(x - 8, y); pen.lineTo(x + 8, y); pen.moveTo(x, y - 8); pen.lineTo(x, y + 8);
-      pen.moveTo(x - 6, y - 6); pen.lineTo(x + 6, y + 6); pen.moveTo(x + 6, y - 6); pen.lineTo(x - 6, y + 6);
     } else {
       pen.moveTo(x - 8, y + 6); pen.lineTo(x + 7, y - 7);
       pen.moveTo(x - 2, y - 3); pen.lineTo(x + 7, y - 7); pen.lineTo(x + 3, y + 2);
@@ -961,12 +889,6 @@ function drawUnicornEffects(x, y) {
   if (effects[0]) for (let index = 0; index < 3; index++)
     line(x - unicorn.direction * (24 + index * 9), y - 7 + index * 7,
       x - unicorn.direction * (10 + index * 5), y - 7 + index * 7, colors[index], 2);
-  if (effects[1]) {
-    pen.strokeStyle = "#bff8ff"; pen.lineWidth = 3; pen.beginPath();
-    pen.arc(x, y, 25 + pulse, 0, Math.PI * 2); pen.stroke();
-    line(x - 14, y - 4, x - 28, y - 15, "#fff", 4);
-    line(x + 14, y - 4, x + 28, y - 15, "#fff", 4);
-  }
   if (effects[2]) {
     pen.strokeStyle = "#ffe54e"; pen.lineWidth = 3; pen.beginPath();
     pen.arc(x, y, 31 + pulse, 0, Math.PI * 2); pen.stroke();
@@ -978,11 +900,6 @@ function drawUnicornEffects(x, y) {
   }
   if (effects[5]) for (let index = 0; index < 3; index++)
     line(x - 14 + index * 14, y + 25, x - 14 + index * 14, y + 12, "#ff613e", 3);
-  if (effects[6]) {
-    pen.strokeStyle = "#b9f5ff"; pen.lineWidth = 5; pen.beginPath();
-    pen.moveTo(x, y - 29); pen.lineTo(x + 25, y); pen.lineTo(x, y + 25);
-    pen.lineTo(x - 25, y); pen.closePath(); pen.stroke();
-  }
 }
 
 function drawPickupPopup() {
@@ -1014,9 +931,9 @@ function collectPickups() {
     if (Math.hypot(unicorn.x - pickup[0], unicorn.y - pickup[1]) < 18) {
       const type = pickup[2];
       roundPickups++;
-      if (type >= 4 && type <= 6) {
+      if (type >= 4 && type <= 5) {
         roundCurses |= 1 << type - 4;
-        if (roundCurses === 7) unlockAchievement(11);
+        if (roundCurses === 3) unlockAchievement(11);
       }
       glowType = type;
       if (type === 7) {
@@ -1075,7 +992,6 @@ function updateCamera(immediate = false) {
 }
 
 function moveUnicorn() {
-  if (effects[6]) return;
   const oldX = unicorn.x;
   const oldY = unicorn.y;
   let dx = Number(keys.has("d") || keys.has("arrowright")) -
@@ -1230,7 +1146,7 @@ function updateMaze() {
   if (bumpWait > 0) bumpWait--;
   const waterSpeed = effects[5] ? .46 : .25;
   waterY -= waterSpeed;
-  if (unicorn.y > waterY + 5 && !effects[1]) {
+  if (unicorn.y > waterY + 5) {
     unlockAchievement(7);
     saveProgress();
     mode = "caught";
@@ -1519,7 +1435,7 @@ function drawArkPassenger(x, y, color) {
 }
 
 function drawLastUnicornEnding() {
-  if (finaleTime === 120 && !testingEnding) unlockAchievement(13);
+  if (finaleTime === 120) unlockAchievement(13);
   const sailing = ease((finaleTime - 125) / 130);
   const sadness = ease((finaleTime - 300) / 90);
   const arkY = 300 - sailing * 28 + Math.sin(frame * .06) * (2 + sailing * 2);
@@ -1707,23 +1623,6 @@ function drawAchievements() {
   text("BACK", 400, 403, 12, "#fff");
 }
 
-function drawEndingTest() {
-  rect(0, 0, W, H, "#120725dd");
-  roundRect(42, 14, 716, 412, 24, "#fffdf5f2");
-  text("ENDING TEST", 400, 50, 28, "#63368e");
-  [endings, secondEndings].forEach((questEndings, questIndex) => {
-    const x = 70 + questIndex * 345;
-    text(`QUEST ${questIndex + 1}`, x + 155, 78, 13, questIndex ? "#d34f9d" : "#63368e");
-    questEndings.forEach((endingText, index) => {
-      const y = 91 + index * 45;
-      roundRect(x, y, 310, 35, 9, colors[index] + "44");
-      text(`${index + 1}. ${endingText[0]}`, x + 155, y + 22, 11, "#51276f");
-    });
-  });
-  roundRect(330, 382, 140, 31, 15, "#63368e");
-  text("BACK", 400, 403, 12, "#fff");
-}
-
 function drawProgressArch(x, y, radius, bitOffset, width = 6) {
   colors.forEach((color, index) => {
     pen.strokeStyle = foundEndings & 1 << index + bitOffset ? color :
@@ -1779,36 +1678,11 @@ function start() {
 }
 
 function showMenu() {
-  testingEnding = false;
   mode = "title";
   waterY = worldHeight + 60;
 }
 
-function showEndingTest() {
-  testingEnding = false;
-  mode = "endingTest";
-  keys.clear();
-}
-
-function testEnding(quest, index) {
-  testingEnding = true;
-  doubleFinalePending = false;
-  endingQuest = quest;
-  ending = index;
-  finaleTime = 0;
-  mode = "finale";
-  particles.length = 0;
-  effects.fill(0);
-  glowType = -1;
-  flash = 10;
-  addParticles(400, 245, 100);
-}
-
 function advanceFinale() {
-  if (testingEnding) {
-    showEndingTest();
-    return;
-  }
   if (mode === "finale" && doubleFinalePending) {
     doubleFinalePending = false;
     mode = "doubleFinale";
@@ -1854,7 +1728,6 @@ function render() {
     if (mode === "title") drawOverlay("UNI-ARK", "");
     if (mode === "caught") drawOverlay("SWEPT AWAY!", "TAP / MOVE");
     if (mode === "achievements") drawAchievements();
-    if (mode === "endingTest") drawEndingTest();
   }
   rainbowFlash();
   pen.restore();
@@ -1878,12 +1751,6 @@ window.addEventListener("keydown", event => {
   const key = event.key.toLowerCase();
   const moving = ["w", "a", "s", "d", "arrowleft", "arrowright", "arrowup", "arrowdown"].includes(key);
   startAudio();
-  if (key === "p" && !event.repeat && mode !== "finale" && mode !== "doubleFinale") {
-    if (mode === "endingTest") showMenu();
-    else showEndingTest();
-    event.preventDefault();
-    return;
-  }
   if (mode === "achievements") {
     if (["escape", "enter", " ", "h"].includes(key)) showMenu();
     event.preventDefault();
@@ -1960,22 +1827,6 @@ canvas.addEventListener("pointerdown", event => {
   const pointerX = (event.clientX - bounds.left - (bounds.width - W * canvasScale) / 2) / canvasScale;
   const pointerY = (event.clientY - bounds.top - (bounds.height - H * canvasScale) / 2) / canvasScale;
   if (mode === "achievements") {
-    if (pointerX >= 330 && pointerX <= 470 && pointerY >= 382 && pointerY <= 413) showMenu();
-    releaseSwipe();
-    return;
-  }
-  if (mode === "endingTest") {
-    for (let questIndex = 0; questIndex < 2; questIndex++) {
-      const x = 70 + questIndex * 345;
-      for (let index = 0; index < 6; index++) {
-        const y = 91 + index * 45;
-        if (pointerX >= x && pointerX <= x + 310 && pointerY >= y && pointerY <= y + 35) {
-          testEnding(questIndex + 1, index);
-          releaseSwipe();
-          return;
-        }
-      }
-    }
     if (pointerX >= 330 && pointerX <= 470 && pointerY >= 382 && pointerY <= 413) showMenu();
     releaseSwipe();
     return;
