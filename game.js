@@ -104,7 +104,7 @@ function startAudio() {
     if (!Audio) return;
     audio = new Audio();
     master = audio.createGain();
-    master.gain.value = muted ? 0 : 0.9;
+    master.gain.value = muted ? 0 : 1;
     master.connect(audio.destination);
   }
   audio.resume();
@@ -117,7 +117,7 @@ function tone(frequency, duration = 0.12, type = "triangle", volume = 0.12, dela
   const time = audio.currentTime + delay;
   oscillator.type = type;
   oscillator.frequency.setValueAtTime(frequency, time);
-  gain.gain.setValueAtTime(volume, time);
+  gain.gain.setValueAtTime(volume * 1.35, time);
   gain.gain.exponentialRampToValueAtTime(0.001, time + duration);
   oscillator.connect(gain).connect(master);
   oscillator.start(time);
@@ -1781,7 +1781,7 @@ window.addEventListener("keydown", event => {
   }
   if (key === "m" && !event.repeat) {
     muted = !muted;
-    if (master) master.gain.value = muted ? 0 : 0.9;
+    if (master) master.gain.value = muted ? 0 : 1;
   }
   if (mode === "title" && key === "h" && !event.repeat) {
     showAchievements();
