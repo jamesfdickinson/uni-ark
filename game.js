@@ -127,7 +127,7 @@ function tone(frequency, duration = 0.12, type = "triangle", volume = 0.12, dela
 function musicTick() {
   if (!audio || muted) return;
   if (mode === "title" && frame % 48 === 0) {
-    tone(scale[Math.floor(frame / 48) % 6], 0.28, "triangle", 0.055);
+    tone(scale[Math.floor(frame / 48) % 6], 0.28, "triangle", 0.11);
   }
   if (mode === "maze") {
     const danger = Math.max(0, Math.min(1, (worldHeight + 60 - waterY) / worldHeight));
@@ -136,30 +136,30 @@ function musicTick() {
       const column = Math.floor((unicorn.x - mazeX) / cell);
       const row = Math.floor((unicorn.y - mazeY) / cell);
       const note = scale[Math.abs(column + row + Math.floor(frame / beat)) % scale.length];
-      tone(note * (danger > 0.65 ? 2 : 1), 0.11, "triangle", 0.08);
-      tone(note / 2, 0.18, "sine", 0.05);
-      if (danger > 0.5) tone(90, 0.04, "square", 0.06, 0.06);
+      tone(note * (danger > 0.65 ? 2 : 1), 0.11, "triangle", 0.16);
+      tone(note / 2, 0.18, "sine", 0.1);
+      if (danger > 0.5) tone(90, 0.04, "square", 0.12, 0.06);
     }
   }
   if (mode === "finale" && ending === 2 && endingQuest === 1) {
     if (finaleTime < 300 && finaleTime % 18 === 0) {
       const note = [392, 493.88, 587.33, 783.99][Math.floor(finaleTime / 18) % 4];
-      tone(note, .22, "triangle", .065);
-      tone(note / 2, .3, "sine", .035);
+      tone(note, .22, "triangle", .13);
+      tone(note / 2, .3, "sine", .07);
     } else if (finaleTime === 300) {
-      tone(392, .65, "sine", .08);
-      tone(311.13, .8, "triangle", .065, .16);
-      tone(233.08, 1.2, "sine", .055, .34);
+      tone(392, .65, "sine", .16);
+      tone(311.13, .8, "triangle", .13, .16);
+      tone(233.08, 1.2, "sine", .11, .34);
     } else if (finaleTime > 300 && finaleTime % 54 === 0) {
       const note = [293.66, 261.63, 233.08, 196][Math.floor((finaleTime - 300) / 54) % 4];
-      tone(note, .75, "sine", .05);
-      tone(note / 2, .9, "triangle", .025);
+      tone(note, .75, "sine", .1);
+      tone(note / 2, .9, "triangle", .05);
     }
   } else if (mode === "finale" && frame % 24 === 0) {
     const root = scale[ending % scale.length];
-    tone(root, 0.3, "sine", 0.07);
-    tone(root * 1.25, 0.3, "triangle", 0.05, 0.08);
-    tone(root * 1.5, 0.35, "sine", 0.04, 0.16);
+    tone(root, 0.3, "sine", 0.14);
+    tone(root * 1.25, 0.3, "triangle", 0.1, 0.08);
+    tone(root * 1.5, 0.35, "sine", 0.08, 0.16);
   }
 }
 
