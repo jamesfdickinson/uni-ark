@@ -1,0 +1,19 @@
+{
+  "achievements": [
+    { "identifier": "APPLES_30", "display_name": "Knock 30 Apples Down", "description": "Knock 30 apples out of the maze's trees.", "stat_requirement": null },
+    { "identifier": "APPLES_80", "display_name": "Knock 80 Apples Down", "description": "Knock 80 apples out of the maze's trees.", "stat_requirement": null },
+    { "identifier": "APPLES_140", "display_name": "Knock 140 Apples Down", "description": "Knock 140 apples out of the maze's trees.", "stat_requirement": null },
+    { "identifier": "WALK_AROUND", "display_name": "Learn to Walk Around", "description": "Travel at least 100 units in a single run.", "stat_requirement": null },
+    { "identifier": "SURVIVE_20", "display_name": "Last 20 Seconds", "description": "Stay ahead of the flood for 20 seconds.", "stat_requirement": null },
+    { "identifier": "SURVIVE_40", "display_name": "Last 40 Seconds", "description": "Stay ahead of the flood for 40 seconds.", "stat_requirement": null },
+    { "identifier": "SURVIVE_60", "display_name": "Last 60 Seconds", "description": "Stay ahead of the flood for 60 seconds.", "stat_requirement": null },
+    { "identifier": "SWIM_WITH_FISHIES", "display_name": "Swim with the Fishies", "description": "Get swept away by the rising flood.", "stat_requirement": null },
+    { "identifier": "CHASE_15", "display_name": "Chase 15 Critters", "description": "Send 15 critters scurrying through the maze.", "stat_requirement": null },
+    { "identifier": "CHASE_40", "display_name": "Chase 40 Critters", "description": "Send 40 critters scurrying through the maze.", "stat_requirement": null },
+    { "identifier": "CHASE_70", "display_name": "Chase 70 Critters", "description": "Send 70 critters scurrying through the maze.", "stat_requirement": null },
+    { "identifier": "BOTH_CURSES", "display_name": "Curses", "description": "Collect both curses in one run.", "stat_requirement": null },
+    { "identifier": "NO_POWER_UPS", "display_name": "No Power-Ups", "description": "Reach an ending without collecting a power-up.", "stat_requirement": null },
+    { "identifier": "GET_ON_ARK", "display_name": "Get on the Ark", "description": "Reach Noah's Ark and discover what waits aboard.", "stat_requirement": null }
+  ],
+  "stats": []
+}
